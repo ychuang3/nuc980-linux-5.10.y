@@ -15,6 +15,8 @@
 #include <linux/signal.h>
 #include <linux/gfp.h>
 #include <linux/of.h>
+#include <linux/pinctrl/consumer.h>
+#include <linux/pinctrl/machine.h>
 
 #include <linux/clk.h>
 #include <mach/irqs.h>
@@ -25,7 +27,7 @@
 #include <mach/regs-gpio.h>
 
 
-//#define PORT_DEBUG
+#define PORT_DEBUG
 
 //#define FORCE_PORT0_HOST
 
@@ -62,7 +64,7 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 	unsigned long flags;
 #endif
 #ifdef CONFIG_USE_OF
-	u32   val32[2];
+	u32   val3 2[2];
 #endif
 
 	(void)p;
