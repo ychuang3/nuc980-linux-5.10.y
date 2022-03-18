@@ -64,7 +64,7 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 	unsigned long flags;
 #endif
 #ifdef CONFIG_USE_OF
-	u32   val3 2[2];
+	u32   val32[2];
 #endif
 
 	(void)p;
