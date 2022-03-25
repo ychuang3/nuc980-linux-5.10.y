@@ -1514,7 +1514,7 @@
 			status = "disabled";
 		};
 
-		qspi0: qspi0@b0060000 {
+		qspi0: spi@b0060000 {
 			compatible = "nuvoton,nuc980-qspi0";
 			reg = <0xb0060000 0x1000>;
 			interrupts = <51 4 1>;
@@ -1522,9 +1522,40 @@
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_qspi0>;
 			status = "disabled";
+
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+
+                        num_cs  = <2>;
+                        lsb      = <0>;
+                        txneg   = <1>;
+                        rxneg   = <0>;
+                        clkpol  = <0>;
+                        divider = <4>;
+                        sleep   = <0>;
+                        txbitlen = <8>;
+                        bus_num = <0>;
+
+                        flash: m25p80@0 {
+                                compatible = "w25q128";
+                                #address-cells = <1>;
+                                #size-cells = <1>;
+                                reg = <0>;
+                                spi-max-frequency = <30000000>;
+
+                                partition@0 {
+                                        label = "kernel";
+                                        reg = <0x00000000 0x0800000>;
+                                };
+                                partition@1 {
+                                        label = "rootfs";
+                                        reg = <0x0800000 0x0800000>;
+                                };
+                        };
+
 		};
 
-		spi0: spi0@b0061000 {
+		spi0: spi@b0061000 {
 			compatible = "nuvoton,nuc980-spi0";
 			reg = <0xb0061000 0x1000>;
 			interrupts = <52 4 1>;
@@ -1534,7 +1565,7 @@
 			status = "disabled";
 		};
 
-		spi1: spi1@b0062000 {
+		spi1: spi@b0062000 {
 			compatible = "nuvoton,nuc980-spi1";
 			reg = <0xb0062000 0x1000>;
 			interrupts = <50 4 1>;
