@@ -33,8 +33,8 @@
 
 
 #ifdef CONFIG_USE_OF
-static int  of_pm_vbus_off;
-static int  of_mfp_setting;
+static int  of_pm_vbus_off;	/* 1: turn-off VBUS when suspend; 0: keep VBUS power */
+static int  of_mfp_setting;	/* 1: use VBUS_EN (PE.10) MFP; 0: PE.10 for GPIO     */
 #endif
 
 
@@ -69,6 +69,8 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 
 	(void)p;
 
+	printk("usb_nuc980_probe\n");
+
 	if (IS_ERR(clk_get(NULL, "usbh_hclk"))) {
 		printk("clk_get error!!\n");
 		return -1;
@@ -98,12 +100,11 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 	local_irq_restore(flags);
 #endif
 
-
 #ifdef CONFIG_USE_OF
 
 	p = devm_pinctrl_get_select_default(&pdev->dev);
 	if (IS_ERR(p)) {
-		return PTR_ERR(p);
+		printk("%s - Do not use VBUS_EN and OVC pins.\n", __func__);
 	}
 
 	if ((__raw_readl(REG_MFP_GPE_H) & 0x000F0000) == 0x00010000)
@@ -111,13 +112,13 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 	else
 		of_mfp_setting = 0;
 
-	//printk("of_mfp_setting = %d\n", of_mfp_setting);
+	printk("of_mfp_setting = %d\n", of_mfp_setting);
 
 	if (of_property_read_u32_array(pdev->dev.of_node, "ov_active", val32, 1) != 0) {
 		printk("%s - can not get ov_active setting!\n", __func__);
 		return -EINVAL;
 	}
-	// printk("Over-current active level %s...\n", val32[0] ? "high" : "low");
+	 printk("Over-current active level %s...\n", val32[0] ? "high" : "low");
 	if (val32[0]) {
 		/* set over-current active high */
 		__raw_writel(__raw_readl(NUC980_VA_OHCI+0x204) &~0x8, (volatile void __iomem *)(NUC980_VA_OHCI+0x204));
@@ -190,6 +191,7 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 
 
 #endif  // CONFIG_USE_OF
+	printk("usb_nuc980_probe 3\n");
 
 	if (pdev->resource[1].flags != IORESOURCE_IRQ) {
 		pr_debug("resource[1] is not IORESOURCE_IRQ");
@@ -233,6 +235,7 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 	ehci->hcs_params = readl(&ehci->caps->hcs_params);
 	ehci->sbrn = 0x20;
 
+	printk("usb_nuc980_probe 4\n");
 	retval = usb_add_hcd(hcd, pdev->resource[1].start, IRQF_SHARED);
 
 	if (retval != 0)
@@ -241,6 +244,7 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 #ifdef PORT_DEBUG
 	kthread_run(port_dump_thread, NULL, "khubd");
 #endif
+	printk("usb_nuc980_probe 5\n");
 
 	return retval;
 
@@ -362,7 +366,7 @@ static int ehci_nuc980_pm_suspend(struct device *dev)
 	__raw_writel(__raw_readl(REG_MFP_GPE_H) & 0xFFF0FFFF, REG_MFP_GPE_H);     // PE.12 GPIO mode
 #endif
 
-#endif  /* end of CONFIG_USE_OFF */
+#endif  /* end of CONFIG_USE_OF */
 
 	return ret;
 }
