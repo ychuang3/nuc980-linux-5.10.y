@@ -1248,7 +1248,7 @@ MODULE_LICENSE ("GPL");
 
 #ifdef CONFIG_USB_NUC980_OHCI
 #include "ohci-nuc980.c"
-#define PLATFORM_DRIVER		ohci_hcd_nuc980_driver
+#define OF_PLATFORM_DRIVER	ohci_hcd_nuc980_driver
 #endif
 
 #if defined(CONFIG_ARCH_SA1100) && defined(CONFIG_SA1111)

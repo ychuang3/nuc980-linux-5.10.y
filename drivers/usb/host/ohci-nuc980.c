@@ -13,6 +13,8 @@
 #include <linux/platform_device.h>
 #include <linux/signal.h>
 #include <linux/of.h>
+#include <linux/pinctrl/consumer.h>
+#include <linux/pinctrl/machine.h>
 #include <mach/regs-gcr.h>
 #include <mach/regs-gpio.h>
 #include <mach/regs-clock.h>
@@ -156,8 +158,6 @@ static int usb_hcd_nuc980_probe(const struct hc_driver *driver,
 		of_mfp_setting = 1;
 	else
 		of_mfp_setting = 0;
-
-	//printk("of_mfp_setting = %d\n", of_mfp_setting);
 
 	if (of_property_read_u32_array(pdev->dev.of_node, "ov_active", val32, 1) == 0) {
 		// printk("Over-current active level %s...\n", val32[0] ? "high" : "low");

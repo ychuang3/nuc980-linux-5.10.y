@@ -717,6 +717,7 @@ static irqreturn_t ehci_irq (struct usb_hcd *hcd)
 	int			bh;
 	unsigned long		flags;
 
+printk("ehci_irq\n");
 	/*
 	 * For threadirqs option we use spin_lock_irqsave() variant to prevent
 	 * deadlock with ehci hrtimer callback, because hrtimer callbacks run

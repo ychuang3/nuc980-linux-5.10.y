@@ -755,13 +755,13 @@
 						 //0 0xE 0x6 0	 /* eint1_A14 */
 
 						 //3 0x0 0x4 0   /* eint2_D0 */
-						 4 0xA 0x5 0	 /* eint2_E10 */
+						 //4 0xA 0x5 0	 /* eint2_E10 */
 						 //1 0x3 0x3 0	 /* eint2_B3 */
-						 //1 0xD 0x2 0	 /* eint2_B13 */
+						 1 0xD 0x2 0	 /* eint2_B13 */
 
 						 //3 0x1 0x4 0   /* eint3_D1 */
-						 4 0xC 0x5 0	 /* eint3_E12 */
-						 //6 0xF 0x4 0	 /* eint3_G15 */
+						 //4 0xC 0x5 0	 /* eint3_E12 */
+						 6 0xF 0x4 0	 /* eint3_G15 */
 						 >;
 				};
 			};
@@ -1495,12 +1495,12 @@
 			/* 1st: 0(Disable)/1(Enable) */
 			/* 2nd: 0(PD0)/1(PE10)/2(PB3)/3(PB13) */
 			/* 3rd: 0(both)/1(rasing)/2(falling)/3(heigh level)/4(low level) */
-			eint2-config = <0 1 0>;
+			eint2-config = <0 3 0>;
 
 			/* 1st: 0(Disable)/1(Enable) */
 			/* 2nd: 0(PD1)/1(PE12)/2(PG15) */
 			/* 3rd: 0(both)/1(rasing)/2(falling)/3(heigh level)/4(low level) */
-			eint3-config = <0 1 0>;
+			eint3-config = <0 2 0>;
 			status = "okay";
 		};
 
@@ -1901,8 +1901,8 @@
 			reg = <0xb0015000 0x1000>;
 			interrupts = <23 4 1>;
 			pinctrl-names = "default";
-			/* pinctrl-0 = <&pinctrl_usbh_ppwr_ovc>; */
-			ov_active = <1>; 				/* over-current active level, 1: active high; 0: active low */
+			pinctrl-0 = <&pinctrl_usbh_ppwr_ovc>;
+			ov_active = <0>; 				/* over-current active level, 1: active high; 0: active low */
 			pm_vbus_off = <0>;				/* 1: turn-off VBUS when suspend; 0: keep VBUS power */
 			status = "okay";
 		};
@@ -1911,7 +1911,7 @@
 			compatible = "nuvoton,nuc980-ohci", "usbh-ohci";
 			reg = <0xb0017000 0x1000>;
 			interrupts = <24 4 1>;
-			/* ov_active = <0>; */				 /* over-current active level, 1: active high; 0: active low */
+			ov_active = <0>;				 /* over-current active level, 1: active high; 0: active low */
 			status = "okay";
 		};
 
