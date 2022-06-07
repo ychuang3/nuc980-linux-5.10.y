@@ -28,6 +28,17 @@ static int  of_pm_vbus_off;
 static int  of_mfp_setting;
 #endif
 
+static struct hc_driver __read_mostly ohci_nuc980_hc_driver;
+
+/* interface and function clocks */
+#define hcd_to_nuc980_ohci_priv(h) \
+	((struct nuc980_ohci_priv *)hcd_to_ohci(h)->priv)
+
+struct nuc980_ohci_priv {
+	int	id;
+//	struct regmap *sysregmap;
+//	struct clk *clk;
+};
 
 /**
  * usb_hcd_ppc_soc_probe - initialize On-Chip HCDs
@@ -257,6 +268,15 @@ static int usb_hcd_nuc980_probe(const struct hc_driver *driver,
 	__raw_writel(0x160, (volatile void __iomem *)(NUC980_VA_EHCI+0xC4));
 	__raw_writel(0x520, (volatile void __iomem *)(NUC980_VA_EHCI+0xC8));
 
+	/*
+	 * Right now device-tree probed devices don't get dma_mask set.
+	 * Since shared usb code relies on it, set it here for now.
+	 * Once we have dma capability bindings this can go away.
+	 */
+	retval = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+	if (retval)
+		goto err1;
+
 	hcd = usb_create_hcd(driver, &pdev->dev, "nuc980-ohci");
 	if (!hcd)
 		return -ENOMEM;
@@ -324,67 +344,6 @@ static void usb_hcd_nuc980_remove(struct usb_hcd *hcd,
 	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
 	usb_put_hcd(hcd);
 }
-
-
-static int ohci_nuc980_start (struct usb_hcd *hcd)
-{
-	struct ohci_hcd *ohci = hcd_to_ohci (hcd);
-	int ret;
-
-	if ((ret = ohci_init(ohci)) < 0)
-		return ret;
-
-	if ((ret = ohci_run (ohci)) < 0) {
-		printk("can't start %s", hcd->self.bus_name);
-		ohci_stop (hcd);
-		return ret;
-	}
-
-	return 0;
-}
-
-
-static const struct hc_driver ohci_nuc980_hc_driver = {
-	.description =      hcd_name,
-	.product_desc =     "Nuvoton NUC980 OHCI Host Controller",
-	.hcd_priv_size =    sizeof(struct ohci_hcd),
-
-	/*
-	 * generic hardware linkage
-	 */
-	.irq =          ohci_irq,
-	.flags =        HCD_USB11 | HCD_MEMORY,
-
-	/*
-	 * basic lifecycle operations
-	 */
-	.start =        ohci_nuc980_start,
-	.stop =         ohci_stop,
-	.shutdown =      ohci_shutdown,
-
-	/*
-	 * managing i/o requests and associated device resources
-	 */
-	.urb_enqueue =      ohci_urb_enqueue,
-	.urb_dequeue =      ohci_urb_dequeue,
-	.endpoint_disable = ohci_endpoint_disable,
-
-	/*
-	 * scheduling support
-	 */
-	.get_frame_number = ohci_get_frame,
-
-	/*
-	 * root hub support
-	 */
-	.hub_status_data =  ohci_hub_status_data,
-	.hub_control =      ohci_hub_control,
-#ifdef  CONFIG_PM
-	.bus_suspend =      ohci_bus_suspend,
-	.bus_resume =       ohci_bus_resume,
-#endif
-	.start_port_reset = ohci_start_port_reset,
-};
 
 
 static int ohci_hcd_nuc980_drv_probe(struct platform_device *pdev)
@@ -526,3 +485,4 @@ static struct platform_driver ohci_hcd_nuc980_driver = {
 		.of_match_table = of_match_ptr(nuc980_ohci_of_match),
 	},
 };
+

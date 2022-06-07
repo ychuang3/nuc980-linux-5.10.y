@@ -27,8 +27,7 @@
 #include <mach/regs-gpio.h>
 
 
-#define PORT_DEBUG
-
+//#define PORT_DEBUG
 //#define FORCE_PORT0_HOST
 
 
@@ -198,6 +197,15 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 		retval = -ENOMEM;
 	}
 
+	/*
+	 * Right now device-tree probed devices don't get dma_mask set.
+	 * Since shared usb code relies on it, set it here for now.
+	 * Once we have dma capability bindings this can go away.
+	 */
+	retval = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+	if (retval)
+		goto err1;
+
 	hcd = usb_create_hcd(driver, &pdev->dev, dev_name(&pdev->dev));
 	if (!hcd) {
 		retval = -ENOMEM;
@@ -212,7 +220,7 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 		retval = -EBUSY;
 		goto err2;
 	}
-
+printk("hcd->rsrc_len = %d\n", hcd->rsrc_len);
 	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
 	if (hcd->regs == NULL) {
 		pr_debug("ehci error mapping memory\n");
@@ -229,7 +237,7 @@ static int usb_nuc980_probe(const struct hc_driver *driver,
 	__raw_writel(0x160, (volatile void __iomem *)physical_map_ehci+0xC4);
 	__raw_writel(0x520, (volatile void __iomem *)physical_map_ehci+0xC8);
 
-	//__raw_writel(__raw_readl(NUC980_VA_OHCI+0x204) | 0xfc0000, (volatile void __iomem *)(NUC980_VA_OHCI+0x204));
+	__raw_writel(__raw_readl(NUC980_VA_OHCI+0x204) | 0xfc0000, (volatile void __iomem *)(NUC980_VA_OHCI+0x204));
 
 	/* cache this readonly data; minimize chip reads */
 	ehci->hcs_params = readl(&ehci->caps->hcs_params);
@@ -276,44 +284,50 @@ static const struct hc_driver ehci_nuc980_hc_driver = {
 	/*
 	 * generic hardware linkage
 	 */
-	.irq = ehci_irq,
-	.flags = HCD_USB2|HCD_MEMORY,
-
+	.irq =			ehci_irq,
+	.flags =		HCD_MEMORY | HCD_DMA | HCD_USB2 | HCD_BH,
 	/*
 	 * basic lifecycle operations
 	 */
-	.reset = ehci_init,
-	.start = ehci_run,
-
-	.stop = ehci_stop,
-	.shutdown = ehci_shutdown,
+	.reset =		ehci_setup,
+	.start =		ehci_run,
+	.stop =			ehci_stop,
+	.shutdown =		ehci_shutdown,
 
 	/*
 	 * managing i/o requests and associated device resources
 	 */
-	.urb_enqueue = ehci_urb_enqueue,
-	.urb_dequeue = ehci_urb_dequeue,
-	.endpoint_disable = ehci_endpoint_disable,
-	.endpoint_reset     = ehci_endpoint_reset,
+	.urb_enqueue =		ehci_urb_enqueue,
+	.urb_dequeue =		ehci_urb_dequeue,
+	.endpoint_disable =	ehci_endpoint_disable,
+	.endpoint_reset =	ehci_endpoint_reset,
+	.clear_tt_buffer_complete =	ehci_clear_tt_buffer_complete,
 
 	/*
 	 * scheduling support
 	 */
-	.get_frame_number = ehci_get_frame,
+	.get_frame_number =	ehci_get_frame,
 
 	/*
 	 * root hub support
 	 */
-	.hub_status_data = ehci_hub_status_data,
-	.hub_control = ehci_hub_control,
+	.hub_status_data =	ehci_hub_status_data,
+	.hub_control =		ehci_hub_control,
+	.bus_suspend =		ehci_bus_suspend,
+	.bus_resume =		ehci_bus_resume,
+	.relinquish_port =	ehci_relinquish_port,
+	.port_handed_over =	ehci_port_handed_over,
+	.get_resuming_ports =	ehci_get_resuming_ports,
+
+	/*
+	 * device support
+	 */
+	.free_dev =		ehci_remove_device,
+
 #ifdef  CONFIG_PM
 	.bus_suspend = ehci_bus_suspend,
 	.bus_resume = ehci_bus_resume,
 #endif
-	.relinquish_port = ehci_relinquish_port,
-	.port_handed_over = ehci_port_handed_over,
-
-	.clear_tt_buffer_complete = ehci_clear_tt_buffer_complete,
 };
 
 static int ehci_nuc980_probe(struct platform_device *pdev)
@@ -416,7 +430,6 @@ MODULE_DEVICE_TABLE(of, nuc980_ehci_of_match);
 
 
 static struct platform_driver ehci_hcd_nuc980_driver = {
-
 	.probe = ehci_nuc980_probe,
 	.remove = ehci_nuc980_remove,
 	.driver = {
