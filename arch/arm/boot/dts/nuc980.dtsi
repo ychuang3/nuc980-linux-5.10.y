@@ -635,7 +635,7 @@
 				};
 			};
 
-			usbd {
+			usbdev {
 				pinctrl_usbd: usbd-vbusvld{
 					nuvoton,pins =
 						<4 0xb 1 0>;
@@ -1875,7 +1875,7 @@
 			interrupts = <29 4 1>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_usbd>;
-			status = "disabled";
+			status = "okay";
 		};
 
 		sdh@b0018000 {
@@ -1893,7 +1893,7 @@
 			interrupts = <28 4 1>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_sd0>;
-			status = "disabled";
+			status = "okay";
 		};
 
 		usbh_ehci@b0015000 {
