@@ -1299,7 +1299,7 @@ MODULE_LICENSE ("GPL");
 
 #ifdef CONFIG_USB_NUC980_EHCI
 #include "ehci-nuc980.c"
-#define PLATFORM_DRIVER         ehci_hcd_nuc980_driver
+#define OF_PLATFORM_DRIVER        ehci_hcd_nuc980_driver
 #endif
 
 #ifdef CONFIG_USB_EHCI_SH

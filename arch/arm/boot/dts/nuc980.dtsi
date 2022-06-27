@@ -1912,6 +1912,7 @@
 			reg = <0xb0017000 0x1000>;
 			interrupts = <24 4 1>;
 			ov_active = <0>;				 /* over-current active level, 1: active high; 0: active low */
+			pm_vbus_off = <0>;				/* 1: turn-off VBUS when suspend; 0: keep VBUS power */
 			status = "okay";
 		};
 

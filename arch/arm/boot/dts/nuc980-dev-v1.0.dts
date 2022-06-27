@@ -132,10 +132,10 @@
 	ahb {
 
 		usbh_ehci@b0015000 {
-			status = "disabled";
+			status = "okay";
 		};
 		usbh_ohci@b0017000{
-			status = "disabled";
+			status = "okay";
 		};
 
 		usbdev@b0016000 {
