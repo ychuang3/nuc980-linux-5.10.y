@@ -74,11 +74,11 @@
 			status = "disabled";
 		};
 
-		pwm0: pwm0@b0058000 {
+		pwm0: pwm@b0058000 {
 			status = "disabled";
 		};
 
-		pwm1: pwm1@b0059000 {
+		pwm1: pwm@b0059000 {
 			status = "disabled";
 		};
 
